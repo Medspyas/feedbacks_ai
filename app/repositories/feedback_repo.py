@@ -1,5 +1,5 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
-from bson import ObjectId
+from bson import ObjectId, errors
 from typing import List, Optional, Dict, Any
 from app.database import db_connection
 
@@ -23,11 +23,13 @@ class FeedbackRepository:
         return feedbacks
     
     async def get_by_id(self, feedback_id: str) -> Optional[Dict[str, Any]]:
-
-        document = await self.collection.find_one({"_id": ObjectId(feedback_id)})
-        if document:
-            document["_id"] = str(document["_id"])
-        return document
+        try:
+            document = await self.collection.find_one({"_id": ObjectId(feedback_id)})
+            if document:
+                document["_id"] = str(document["_id"])        
+            return document
+        except errors.InvalidId:
+            return None
     
 
     async def update(self, feedback_id:str, update_data:Dict[str, Any]) -> bool:

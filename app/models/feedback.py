@@ -11,7 +11,7 @@ class Feedback(BaseModel):
 
 
 class FeedbackDB(Feedback):
-    id : Optional[str] = None
+    id : Optional[str] = Field(None, alias="_id")
     status: str = "pending"
     ai_analysis: Optional[str] = None
     created_at: datetime = Field(
