@@ -1,16 +1,30 @@
 from app.repositories.feedback_repo import FeedbackRepository
 from app.models.feedback import Feedback, FeedbackDB
+from app.services.ai_service import AIServices
 
 class FeedbackServices:
     def __init__(self):
         self.repo = FeedbackRepository()
+        self.ai = AIServices()
 
     async def create_feedback(self, feedback_in: Feedback) -> FeedbackDB:
+
+        ai_data = await self.ai.analysis_feedback(
+            content=feedback_in.content,
+            company=feedback_in.company_name,
+            category=feedback_in.category
+        )
 
 
         feedback_dict = feedback_in.model_dump()
 
-        feedback_db = FeedbackDB(**feedback_dict)
+        feedback_db = FeedbackDB(
+            **feedback_dict,
+            ai_analysis=ai_data.get("sentiment"),
+            ai_response=ai_data.get("reply"),
+            status="analyzed"
+
+        )
 
         data_to_save = feedback_db.model_dump(by_alias=True, exclude={"id"})
 
