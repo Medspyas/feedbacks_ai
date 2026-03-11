@@ -1,6 +1,6 @@
 import os
 import json
-import google.generativeai as genai
+from groq import AsyncClient
 from dotenv import load_dotenv
 
 
@@ -9,10 +9,9 @@ load_dotenv()
 class AIServices:
     def __init__(self):
 
-        api_key = os.getenv("GEMINI_API_KEY")
-        genai.configure(api_key=api_key)
-
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        api_key = os.getenv("GROQ_API_KEY")
+        self.client = AsyncClient(api_key=api_key)
+        self.model_id = "llama-3.3-70b-versatile"
 
     async def analysis_feedback(self, content: str, company:str, category:str):
 
@@ -28,11 +27,14 @@ class AIServices:
 
         try:
 
-            response = self.model.generate_content(prompt)
-
-            text_response = response.text.replace('```json', '').replace('```', '').strip()
-
-            return json.loads(text_response)
+            response = await self.client.chat.completions.create(
+                model=self.model_id,
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
+                )
+                      
+        
+            return json.loads(response.choices[0].message.content)
         except Exception as e:
             print(f"Erreur IA : {e}")
             return {
