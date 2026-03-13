@@ -3,3 +3,4 @@ mongo_db_info.png
 password_mongo_db.txt
 __pycache__
 .env
+.coverage

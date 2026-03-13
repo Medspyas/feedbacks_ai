@@ -14,7 +14,7 @@ class Database:
 db_connection = Database()
 
 async def connect_to_mongo():
-    uri = os.getenv("MONGO_URI")
+    uri = os.getenv("MONGO_DB_URL")
 
     db_connection.client = AsyncIOMotorClient(uri)
 
