@@ -4,3 +4,4 @@ password_mongo_db.txt
 __pycache__
 .env
 .coverage
+frontend/package-lock.json
