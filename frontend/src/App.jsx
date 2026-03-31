@@ -9,6 +9,8 @@ const App = () => {
 
   const [feedbacks, setFeedbacks] = useState([]);
 
+  const [errors, setErrors] = useState({});
+
   const [formData, setFormData] = useState({username: '', company_name: '',  category: '', content: '',});
 
   useEffect(() => {
@@ -19,14 +21,30 @@ const App = () => {
     try {
       const response = await fetch('/api/feedbacks/');
       const data = await response.json();
-      setFeedbacks(data);      
+      setFeedbacks(data);
+      const sorted = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setFeedbacks(sorted);      
     } catch (err) {
       console.error("Erreur lors de la récupération", err)
     }
   };
 
+  const validate = () => {
+    const newErrors = {};
+    if (formData.username.length < 3) newErrors.username = "Minimum 3 caractères";
+    if (formData.company_name.length < 3) newErrors.company_name = "Minimum 3 caractères";
+    if (formData.category.length < 3) newErrors.category = "Minimum 3 caractères";
+    if (formData.content.length < 10) newErrors.content = "Minimum 10 caractères";
+    if (rating === 0) newErrors.rating = "Veuillez sélectionner une note"
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validate()) return;
+
     setStatus('loading');
 
     try{
@@ -43,6 +61,7 @@ const App = () => {
           setStatus('idle'); 
           setView('history'); 
           setRating(0); 
+          setFormData({ username: '', company_name: '', category: '', content: '' });
         }, 
           1500);
         } 
@@ -110,6 +129,7 @@ const App = () => {
                 onChange={(e) => setFormData({... formData, username: e.target.value})}
                 className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500/50 focus:ring-indigo-500/50 outline-none transition-all text-zinc-100 placeholder:text-zinc-600" 
                 />
+                {errors.username && <p className='text-red-400 text-xs mt-1'>{errors.username}</p>}
                 <input 
                 type="text" required placeholder='Entreprise'
                 minLength={3} maxLength={50}
@@ -117,14 +137,15 @@ const App = () => {
                 onChange={(e) => setFormData({...formData, company_name: e.target.value})}
                 className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500/50 focus:ring-indigo-500/50 outline-none transition-all text-zinc-100 placeholder:text-zinc-600" 
                 />        
-
+                {errors.company_name && <p className='text-red-400 text-xs mt-1'>{errors.company_name}</p>}
                 <input 
                 type="text" required placeholder='Catégorie'
                 minLength={3} maxLength={20}
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
                 className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500/50 focus:ring-indigo-500/50 outline-none transition-all text-zinc-100 placeholder:text-zinc-600" 
-                />  
+                />
+                {errors.category && <p className='text-red-400 text-xs mt-1'>{errors.category}</p>}  
               </div>
               
 
@@ -135,7 +156,7 @@ const App = () => {
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500/50 focus:ring-indigo-500/50 outline-none transition-all resize-none text-zinc-100 placeholder:text-zinc-600"
               />
-
+              {errors.content && <p className='text-red-400 text-xs mt-1'>{errors.content}</p>}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-2">
                 {/* rating */}
                 <div className="flex gap-1.5">
@@ -148,6 +169,7 @@ const App = () => {
                     </button>
                   ))}
                 </div>
+                {errors.rating && <p className='text-red-400 text-xs mt-1'>{errors.rating}</p>}
                 {/* button submit */}
                 <button
                   type="submit" disabled={status !== 'idle'}
