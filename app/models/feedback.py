@@ -1,6 +1,6 @@
 from pydantic import BaseModel,  Field, ConfigDict
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List
 
 
 
@@ -17,6 +17,12 @@ class FeedbackDB(Feedback):
     status: str = "pending"
     ai_analysis: Optional[str] = None
     ai_response: Optional[str] = None
+    priority: Optional[str] = None
+    keywords: Optional[List[str]] = None
+    language: Optional[str] = None
+    satisfaction_score: Optional[float] = None
+    suggested_action: Optional[str] = None
+    
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
         )

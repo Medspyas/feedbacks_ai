@@ -22,7 +22,12 @@ class FeedbackServices:
             **feedback_dict,
             ai_analysis=ai_data.get("sentiment"),
             ai_response=ai_data.get("reply"),
-            status="analyzed"
+            status="analyzed",
+            priority=ai_data.get("priority"),
+            keywords=ai_data.get("keywords"),
+            language=ai_data.get("language"),
+            satisfaction_score=ai_data.get("satisfaction_score"),
+            suggested_action=ai_data.get("suggested_action"),
 
         )
 

@@ -85,6 +85,12 @@ const App = () => {
     return { label: 'En attente', cls: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' };
   };
 
+  const getPriorityBadge = (priority) => {
+    if (priority === "high") return {label: 'Haute', cls: "bg-red-500/10 text-red-400 border-red-500/20"};
+    if (priority === "medium") return {label: 'Moyenne', cls: "bg-amber-500/10 text-amber-400 border-amber-500/20"};
+    return { label: "Basse", cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" }
+  }
+
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-300 font-sans selection:bg-indigo-500/30 flex flex-col items-center pt-12 pb-24 px-6">
@@ -122,7 +128,8 @@ const App = () => {
 
             <form onSubmit={handleSubmit} className="bg-zinc-900/50 p-6 md:p-8 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <input 
+                <div>
+                   <input 
                 type="text" required placeholder='Nom du client'
                 minLength={3} maxLength={50}
                 value={formData.username}
@@ -130,6 +137,8 @@ const App = () => {
                 className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500/50 focus:ring-indigo-500/50 outline-none transition-all text-zinc-100 placeholder:text-zinc-600" 
                 />
                 {errors.username && <p className='text-red-400 text-xs mt-1'>{errors.username}</p>}
+                </div>
+               <div>
                 <input 
                 type="text" required placeholder='Entreprise'
                 minLength={3} maxLength={50}
@@ -138,15 +147,22 @@ const App = () => {
                 className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500/50 focus:ring-indigo-500/50 outline-none transition-all text-zinc-100 placeholder:text-zinc-600" 
                 />        
                 {errors.company_name && <p className='text-red-400 text-xs mt-1'>{errors.company_name}</p>}
-                <input 
+               </div>
+
+            </div>
+            
+                <div>
+                  <input 
                 type="text" required placeholder='Catégorie'
                 minLength={3} maxLength={20}
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
                 className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500/50 focus:ring-indigo-500/50 outline-none transition-all text-zinc-100 placeholder:text-zinc-600" 
                 />
-                {errors.category && <p className='text-red-400 text-xs mt-1'>{errors.category}</p>}  
-              </div>
+                {errors.category && <p className='text-red-400 text-xs mt-1'>{errors.category}</p>} 
+                </div>
+                 
+              
               
 
               <textarea
@@ -191,6 +207,7 @@ const App = () => {
               
             feedbacks.map((fb) => {
               const badge = getSentimentBadge(fb.status);
+              const priority = getPriorityBadge(fb.priority)
               return (
                 <div key={fb._id} className="bg-zinc-900/30 p-6 rounded-2xl border border-zinc-800/80 hover:border-zinc-700 transition-colors">
                   <div className="flex justify-between items-start mb-3">
@@ -202,11 +219,21 @@ const App = () => {
                       <div className="flex items-center gap-1 mt-1 text-indigo-400">
                         <Star size={12} fill="currentColor"/> {fb.rating}/5
                       </div>
+
+                      {fb.language && (
+                        <span className='text-xs text-zinc-500'>Score {fb.satisfaction_score}/10</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`text-xs px-2.5 py-1 rounded-full border ${badge.cls}`}>
                         {badge.label}
                       </span>
+
+                      {fb.priority && (
+                        <span className={`text-xs px-2.5 py-1 rounded-full border ${priority.cls}`}>
+                          {priority.label}
+                        </span>
+                      )}
 
                       <button
                         onClick={() => handleDelete(fb._id)}
@@ -220,10 +247,28 @@ const App = () => {
 
                     <p className="text-sm text-zinc-400 italic mb-4 ">"{fb.content}"</p>
 
+                    {fb.keywords && fb.keywords.length > 0 && (
+                      <div className='flex flex-wrap gap-2 mb-4'>
+                        {fb.keywords.map((kw, i) => (
+                          <span key={i} className='text-xs px-2 py-1 rounded-md bg-zinc-800 text-zinc-400 border border-zinc-700'>
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
                     {fb.ai_analysis && (
                       <div className="bg-indigo-500/5 rounded-xl p-4 border border-indigo-500/10">
                         <p className="text-xs font-medium text-indigo-300 mb-1">Analyse IA</p>
                         <p className="text-sm text-zinc-300">{fb.ai_analysis}</p>
+
+                        {fb.suggested_action && (
+                          <p className='text-sm text-amber-400/80 border-t border-indigo-500/10 pt-2'>
+                            <span className='font-medium'>Action recommandé: </span>
+                            {fb.suggested_action}
+                          </p>
+                        )}
+
                         {fb.ai_response && (
                           <p className="text-sm text-zinc-400 mt-2 border-t border-indigo-500/10 pt-2">
                             <span className="text-indigo-300 font-medium"> Réponse suggérée: </span>
