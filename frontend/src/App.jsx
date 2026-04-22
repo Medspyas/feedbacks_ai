@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {Sparkles, Star, Loader2, Check, Trash2} from 'lucide-react';
 
 
@@ -13,6 +13,10 @@ const App = () => {
 
   const [formData, setFormData] = useState({username: '', company_name: '',  category: '', content: '',});
 
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const [filters, setFilters] = useState({ priority: '', rating: 0 });
+
   useEffect(() => {
     fetchFeedback();
   }, [])
@@ -23,7 +27,8 @@ const App = () => {
       const data = await response.json();
       setFeedbacks(data);
       const sorted = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setFeedbacks(sorted);      
+      setFeedbacks(sorted); 
+      setSearchTerm('');     
     } catch (err) {
       console.error("Erreur lors de la récupération", err)
     }
@@ -74,7 +79,7 @@ const App = () => {
   const handleDelete = async (id) => {
     try {
       await fetch('/api/feedbacks/' + id, { method: 'DELETE' });
-      setFeedbacks(feedbacks.filter(f => f.id !== id));
+      setFeedbacks(feedbacks.filter(f => f._id !== id));
     } catch (err){
       console.error("Erreur suppression", err);
     }      
@@ -90,6 +95,39 @@ const App = () => {
     if (priority === "medium") return {label: 'Moyenne', cls: "bg-amber-500/10 text-amber-400 border-amber-500/20"};
     return { label: "Basse", cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" }
   }
+
+  const handleSearch = async (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+
+      try{
+       const url = value
+      ? `/api/feedbacks/?search=${encodeURIComponent(value)}`
+      : '/api/feedbacks/';
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      setFeedbacks(data);
+    } catch (err) {
+      console.error("Erreur recherche", err);
+    }
+
+    }, 300);
+
+    
+  };
+
+  const filteredFeedbacks = feedbacks.filter(fb => {
+    const matchPriority = filters.priority ? fb.priority === filters.priority : true;
+    const matchRating = filters.rating ? fb.rating === filters.rating : true;
+    return matchPriority && matchRating
+  });
+
+  
 
 
   return (
@@ -201,11 +239,79 @@ const App = () => {
         ): (
           <div className="space-y-6">
             <h2 className="text-xl font-medium text-zinc-100">Analyse récentes</h2>
+
+            <div className='relative'>
+              <input 
+              type="text"
+              placeholder='Rechercher par nom, entreprise, contenu...'
+              value={searchTerm}
+              onChange={handleSearch}
+              className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:b order-indigo-500/50 outline-none text-zinc-100 placeholder:text-zinc-600"
+              />
+              {searchTerm && (
+                <button
+                onClick={() => {
+                  setSearchTerm('');
+                  fetchFeedback();
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                >
+                  x 
+                </button>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+  
+            
+            <select
+              value={filters.priority}
+              onChange={(e) => setFilters(f => ({ ...f, priority: e.target.value }))}
+              className="text-xs px-3 py-2 rounded-xl border bg-zinc-900 border-zinc-800 text-zinc-400 outline-none cursor-pointer hover:border-zinc-600 transition-colors"
+            >
+              <option value="">Priorité</option>
+              <option value="high">Haute</option>
+              <option value="medium">Moyenne</option>
+              <option value="low">Basse</option>
+            </select>
+
+            
+            <select
+              value={filters.rating}
+              onChange={(e) => setFilters(f => ({ ...f, rating: Number(e.target.value) }))}
+              className="text-xs px-3 py-2 rounded-xl border bg-zinc-900 border-zinc-800 text-zinc-400 outline-none cursor-pointer hover:border-zinc-600 transition-colors"
+            >
+                <option value={0}>Note</option>
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+                <option value={5}>5</option>
+            </select>
+
+            
+            {(filters.priority || filters.rating > 0) && (
+              <button
+                onClick={() => setFilters({ priority: '', rating: 0 })}
+                className="text-xs px-3 py-2 rounded-xl border border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 transition-colors"
+              >
+                Réinitialiser
+              </button>
+            )}
+
+          </div>
+
+            {searchTerm && (
+              <p className="text-xs text-zinc-500 -mt-4">
+                {feedbacks.length} résultat{feedbacks.length > 1 ? 's': ''}
+              </p>
+            )}
+
             {feedbacks.length === 0 ? (
               <p className='text-zinc-500 text-sm text-center py-12'>Aucun feedback pour le moment.</p>
             ) : (
               
-            feedbacks.map((fb) => {
+            filteredFeedbacks.map((fb) => {
               const badge = getSentimentBadge(fb.status);
               const priority = getPriorityBadge(fb.priority)
               return (
