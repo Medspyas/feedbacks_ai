@@ -67,3 +67,9 @@ async def remove_feeedback(
     if not deleted:
         raise HTTPException(status_code=404, detail="Feedback non trouvé")
     return None
+
+
+@router.get("/count")
+async def get_feedback_count(services: FeedbackServices = Depends(get_feedback_services)):
+    count = await services.count_feedbacks()
+    return{"total": count}

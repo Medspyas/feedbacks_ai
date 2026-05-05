@@ -17,13 +17,19 @@ const App = () => {
 
   const [filters, setFilters] = useState({ priority: '', rating: 0 });
 
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10; 
+
   useEffect(() => {
     fetchFeedback();
+    festchCount();
   }, [])
 
-  const fetchFeedback = async () => {
+  const fetchFeedback = async (page = 1) => {
     try {
-      const response = await fetch('/api/feedbacks/');
+      const skip = (page - 1) * ITEMS_PER_PAGE;
+      const response = await fetch(`/api/feedbacks/?limit=${ITEMS_PER_PAGE}&skip=${skip}`);
       const data = await response.json();
       setFeedbacks(data);
       const sorted = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -32,6 +38,12 @@ const App = () => {
     } catch (err) {
       console.error("Erreur lors de la récupération", err)
     }
+  };
+
+  const festchCount = async () => {
+    const res = await fetch('/api/feesbacks/count');
+    const data = await res.json();
+    setTotalCount(data.total);
   };
 
   const validate = () => {
@@ -80,7 +92,8 @@ const App = () => {
     try {
       await fetch('/api/feedbacks/' + id, { method: 'DELETE' });
       setFeedbacks(feedbacks.filter(f => f._id !== id));
-    } catch (err){
+      await festchCount();
+    } catch (err) {
       console.error("Erreur suppression", err);
     }      
   };
@@ -127,6 +140,8 @@ const App = () => {
     return matchPriority && matchRating
   });
 
+
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
   
 
 
@@ -266,7 +281,11 @@ const App = () => {
             
             <select
               value={filters.priority}
-              onChange={(e) => setFilters(f => ({ ...f, priority: e.target.value }))}
+              onChange={(e) => {
+                setFilters(f => ({ ...f, priority: e.target.value }))
+                setCurrentPage(1);
+              }}
+
               className="text-xs px-3 py-2 rounded-xl border bg-zinc-900 border-zinc-800 text-zinc-400 outline-none cursor-pointer hover:border-zinc-600 transition-colors"
             >
               <option value="">Priorité</option>
@@ -278,7 +297,10 @@ const App = () => {
             
             <select
               value={filters.rating}
-              onChange={(e) => setFilters(f => ({ ...f, rating: Number(e.target.value) }))}
+              onChange={(e) => {
+                setFilters(f => ({ ...f, rating: Number(e.target.value) }))
+                setCurrentPage(1);
+              }}
               className="text-xs px-3 py-2 rounded-xl border bg-zinc-900 border-zinc-800 text-zinc-400 outline-none cursor-pointer hover:border-zinc-600 transition-colors"
             >
                 <option value={0}>Note</option>
@@ -386,6 +408,39 @@ const App = () => {
                 </div>
               );
             })
+          )}
+
+          {totalPages > 1 &&(
+            <div className='flex items-center justify-center gap-2 pt-4'>
+              <button
+              onCLick={() => fetchFeedback(currentPage - 1)}
+              disabled={currentPage === 1 }
+              className='text-xs px-3 py-2 rounded-xl border border-zinc-800 text-zinc-400 hover:border-zinc-600 disabled:cursor-not-allowed transition-colors'
+              >
+                Précédent
+              </button>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                key={i}
+                onClick={() => fetchFeedback(i + 1)}
+                className={`text-xs w-8 rounded-xl border transition-colors ${
+                currentPage === i + 1
+                ? 'bg-indigo-600 border-indigo-500 text-white'
+                : 'border-zinc-800 text-zinc-400 hover:border-zinc-600'
+              }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+              onClick={() => fetchFeedback(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className='text-xs px-3 py-2 rounded-xl border border-zinc-800 text-zinc-400 hover:border-zinc-600 disabled:cursor-not-allowed transition-colors'
+              >
+                Suivant
+              </button>
+            </div>
           )}
         </div>
         

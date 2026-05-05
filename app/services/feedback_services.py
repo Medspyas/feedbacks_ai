@@ -57,3 +57,8 @@ class FeedbackServices:
     async def delete_feedback(self, feedback_id: str):
         
         return await self.repo.delete(feedback_id)
+    
+    async def count_feedbacks(self) -> int:
+        return await self.repo.count()
+    
+    
