@@ -44,3 +44,21 @@ class FeedbackRepository:
     async def delete(self, feedback_id:str) -> bool :
         result = await self.collection.delete_one({"_id": ObjectId(feedback_id)})
         return result.deleted_count > 0
+    
+    async def search(self, query:str, limit: int = 50) -> List[Dict[str, Any]]:
+        regex = {"$regex": query, "$options": "i"}
+
+        cursor = self.collection.find({
+            "$or": [
+                {"username": regex},
+                {"company_name": regex},
+                {"content": regex},
+                {"keywords": regex},
+                {"category": regex},
+            ]
+        }).limit(limit)
+
+        feedbacks = await cursor.to_list(length=limit)
+        for f in feedbacks:
+            f["_id"] = str(f["_id"])
+        return feedbacks

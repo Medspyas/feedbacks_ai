@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status
-from typing import List
+from typing import List, Optional
 from app.models.feedback import Feedback, FeedbackDB
 from app.services.feedback_services import FeedbackServices
 
@@ -19,14 +19,19 @@ async def create_new_feedback(
     feedback: Feedback,
     service: FeedbackServices = Depends(get_feedback_services)
 ):    
-    
-    return await service.create_feedback(feedback)
+    try:
+        return await service.create_feedback(feedback)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
 @router.get("/", response_model=List[FeedbackDB])
 async def read_all_feedbacks(
     limit: int = 50,
+    search: Optional[str] = None,
     service: FeedbackServices = Depends(get_feedback_services)    
 ):
+    if search:
+        return await service.search_feedbacks(search, limit)
     return await service.get_all_feedbacks(limit=limit)
 
 @router.get("/{feedback_id}", response_model=FeedbackDB)

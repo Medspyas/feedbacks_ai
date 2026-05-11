@@ -1,6 +1,7 @@
 from app.repositories.feedback_repo import FeedbackRepository
 from app.models.feedback import Feedback, FeedbackDB
 from app.services.ai_service import AIServices
+from app.utils import clean_text, is_valid_content
 
 class FeedbackServices:
     def __init__(self):
@@ -9,8 +10,12 @@ class FeedbackServices:
 
     async def create_feedback(self, feedback_in: Feedback) -> FeedbackDB:
 
+        cleaned = clean_text(feedback_in.content)
+        if not is_valid_content(cleaned):
+             raise ValueError("Contenu invalide")
+        
         ai_data = await self.ai.analysis_feedback(
-            content=feedback_in.content,
+            content=cleaned,
             company=feedback_in.company_name,
             category=feedback_in.category
         )
