@@ -17,6 +17,8 @@ const App = () => {
 
   const [filters, setFilters] = useState({ priority: '', rating: 0 });
 
+  const debounceRef = useRef(null);
+
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10; 
@@ -30,18 +32,18 @@ const App = () => {
     try {
       const skip = (page - 1) * ITEMS_PER_PAGE;
       const response = await fetch(`/api/feedbacks/?limit=${ITEMS_PER_PAGE}&skip=${skip}`);
-      const data = await response.json();
+      const data = await response.json();   
       setFeedbacks(data);
-      const sorted = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setFeedbacks(sorted); 
-      setSearchTerm('');     
+      setCurrentPage(page);
+      setTimeout(() => window.scrollTo({ top: scrollY }), 0); 
+      setSearchTerm('');         
     } catch (err) {
       console.error("Erreur lors de la récupération", err)
     }
   };
 
   const festchCount = async () => {
-    const res = await fetch('/api/feesbacks/count');
+    const res = await fetch('/api/feedbacks/count');
     const data = await res.json();
     setTotalCount(data.total);
   };
@@ -92,7 +94,7 @@ const App = () => {
     try {
       await fetch('/api/feedbacks/' + id, { method: 'DELETE' });
       setFeedbacks(feedbacks.filter(f => f._id !== id));
-      await festchCount();
+      setTotalCount(prev => prev - 1);      
     } catch (err) {
       console.error("Erreur suppression", err);
     }      
@@ -170,7 +172,7 @@ const App = () => {
       </nav>
 
       {/* main */}
-      <main className="w-full max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <main className="w-full max-w-2xl">
 
         {view === 'form' ? (
           <div className="space-y-8">
@@ -410,38 +412,41 @@ const App = () => {
             })
           )}
 
-          {totalPages > 1 &&(
-            <div className='flex items-center justify-center gap-2 pt-4'>
-              <button
-              onCLick={() => fetchFeedback(currentPage - 1)}
-              disabled={currentPage === 1 }
-              className='text-xs px-3 py-2 rounded-xl border border-zinc-800 text-zinc-400 hover:border-zinc-600 disabled:cursor-not-allowed transition-colors'
-              >
-                Précédent
-              </button>
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                key={i}
-                onClick={() => fetchFeedback(i + 1)}
-                className={`text-xs w-8 rounded-xl border transition-colors ${
-                currentPage === i + 1
-                ? 'bg-indigo-600 border-indigo-500 text-white'
-                : 'border-zinc-800 text-zinc-400 hover:border-zinc-600'
-              }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
 
-              <button
-              onClick={() => fetchFeedback(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className='text-xs px-3 py-2 rounded-xl border border-zinc-800 text-zinc-400 hover:border-zinc-600 disabled:cursor-not-allowed transition-colors'
-              >
-                Suivant
-              </button>
-            </div>
-          )}
+
+            {totalPages > 1 && (
+              <div className='fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-zinc-900/90 backdrop-blur-sm px-4 py-2 rounded-2xl border border-zinc-800 shadow-xl'>
+                <button
+                  onClick={() => fetchFeedback(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className='text-xs px-3 py-2 rounded-xl border border-zinc-800 text-zinc-400 hover:border-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                >
+                  ← Précédent
+                </button>
+
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => fetchFeedback(i + 1)}
+                    className={`text-xs w-8 h-8 rounded-xl border transition-colors ${
+                      currentPage === i + 1
+                        ? 'bg-indigo-600 border-indigo-500 text-white'
+                        : 'border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => fetchFeedback(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className='text-xs px-3 py-2 rounded-xl border border-zinc-800 text-zinc-400 hover:border-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                >
+                  Suivant →
+                </button>
+              </div>
+            )}
         </div>
         
             

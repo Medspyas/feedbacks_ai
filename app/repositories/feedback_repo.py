@@ -14,9 +14,9 @@ class FeedbackRepository:
         result = await self.collection.insert_one(data)
         return str(result.inserted_id)
     
-    async def get_all(self, limit:int = 50) -> List[Dict[str, Any]]:
+    async def get_all(self, limit:int = 10, skip: int = 0) -> List[Dict[str, Any]]:
 
-        cursor = self.collection.find().limit(limit)
+        cursor = self.collection.find().sort("created_at", -1).skip(skip).limit(limit)
         feedbacks = await cursor.to_list(length=limit)
         for f in feedbacks:
             f["_id"] = str(f["_id"])
@@ -45,7 +45,7 @@ class FeedbackRepository:
         result = await self.collection.delete_one({"_id": ObjectId(feedback_id)})
         return result.deleted_count > 0
     
-    async def search(self, query:str, limit: int = 50) -> List[Dict[str, Any]]:
+    async def search(self, query:str, limit: int = 10) -> List[Dict[str, Any]]:
         regex = {"$regex": query, "$options": "i"}
 
         cursor = self.collection.find({
@@ -62,3 +62,6 @@ class FeedbackRepository:
         for f in feedbacks:
             f["_id"] = str(f["_id"])
         return feedbacks
+    
+    async def count(self) -> int:
+        return await self.collection.count_documents({})

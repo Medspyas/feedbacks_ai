@@ -26,13 +26,20 @@ async def create_new_feedback(
 
 @router.get("/", response_model=List[FeedbackDB])
 async def read_all_feedbacks(
-    limit: int = 50,
+    limit: int = 10,
+    skip: int = 0,
     search: Optional[str] = None,
     service: FeedbackServices = Depends(get_feedback_services)    
 ):
     if search:
         return await service.search_feedbacks(search, limit)
-    return await service.get_all_feedbacks(limit=limit)
+    return await service.get_all_feedbacks(limit=limit, skip=skip)
+
+@router.get("/count")
+async def get_feedback_count(services: FeedbackServices = Depends(get_feedback_services)):
+    count = await services.count_feedbacks()
+    return{"total": count}
+
 
 @router.get("/{feedback_id}", response_model=FeedbackDB)
 async def get_one_feed_back(
@@ -74,7 +81,3 @@ async def remove_feeedback(
     return None
 
 
-@router.get("/count")
-async def get_feedback_count(services: FeedbackServices = Depends(get_feedback_services)):
-    count = await services.count_feedbacks()
-    return{"total": count}

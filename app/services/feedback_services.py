@@ -43,9 +43,9 @@ class FeedbackServices:
         return await self.repo.get_by_id(feedback_id)
     
 
-    async def get_all_feedbacks(self, limit: int = 50):
+    async def get_all_feedbacks(self, limit: int = 10, skip: int = 0):
 
-        return await self.repo.get_all(limit=limit)
+        return await self.repo.get_all(limit=limit, skip=skip)
     
     async def get_one_feedback(self, feedback_id: str):
 
