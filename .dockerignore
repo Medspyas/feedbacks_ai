@@ -1,0 +1,10 @@
+/venv
+__pycache__/
+.pytest_cache/
+.coverage
+*.pyc
+.env
+tests/
+mongo_db_info.png
+password_mongo_db.txt
+.gitignore
