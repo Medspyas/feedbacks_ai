@@ -1,6 +1,6 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from app.main import app
 import asyncio
 
@@ -15,6 +15,7 @@ def event_loop():
 
     yield loop
     loop.close()
+    
 
 @pytest.fixture
 async def client():
@@ -24,7 +25,6 @@ async def client():
         yield ac
 
 @pytest.fixture(autouse=True)
-def mock_db_repo():
-
-    with patch("app.repositories.feedback_repo.FeedbackRepository.__init__", return_value=None):
+def mock_db_repo():    
+    with patch("app.repositories.feedback_repo.FeedbackRepository.__init__", return_value=None):         
         yield

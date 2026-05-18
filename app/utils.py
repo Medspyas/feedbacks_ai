@@ -21,6 +21,9 @@ def clean_text(text: str) -> str:
 
 def is_valid_content(text: str) -> bool:
 
+    if not text:
+        return False
+
     has_letters = bool(re.search(r'[a-zA-Z0-9]{3,}', text))
 
     is_not_repetition = not bool(re.search(r'(.)\1{15,}', text))

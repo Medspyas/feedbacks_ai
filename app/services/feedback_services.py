@@ -66,4 +66,6 @@ class FeedbackServices:
     async def count_feedbacks(self) -> int:
         return await self.repo.count()
     
+    async def search_feedbacks(self, query: str, limit: int = 10) -> list:
+        return await self.repo.search(query, limit)
     
