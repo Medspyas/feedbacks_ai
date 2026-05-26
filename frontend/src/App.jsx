@@ -23,10 +23,22 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10; 
 
+  
   useEffect(() => {
-    fetchFeedback();
-    festchCount();
-  }, [])
+    const loadData = async () => {
+      const res = await fetch(`/api/feedbacks/?limit=${ITEMS_PER_PAGE}&skip=0`);
+      const data = await res.json();
+      setFeedbacks(data);
+
+      const res_count = await fetch('/api/feedbacks/count');
+      const countData = await res_count.json();
+      setTotalCount(countData.total);
+    };
+    loadData();
+    
+  }, []);
+
+
 
   const fetchFeedback = async (page = 1) => {
     try {
@@ -34,8 +46,7 @@ const App = () => {
       const response = await fetch(`/api/feedbacks/?limit=${ITEMS_PER_PAGE}&skip=${skip}`);
       const data = await response.json();   
       setFeedbacks(data);
-      setCurrentPage(page);
-      setTimeout(() => window.scrollTo({ top: scrollY }), 0); 
+      setCurrentPage(page);      
       setSearchTerm('');         
     } catch (err) {
       console.error("Erreur lors de la récupération", err)
@@ -48,6 +59,8 @@ const App = () => {
     setTotalCount(data.total);
   };
 
+
+ 
   const validate = () => {
     const newErrors = {};
     if (formData.username.length < 3) newErrors.username = "Minimum 3 caractères";
@@ -75,6 +88,7 @@ const App = () => {
 
       if (response.ok) {
         await fetchFeedback();
+        await festchCount();
         setStatus('success');
         setTimeout(() => { 
           setStatus('idle'); 

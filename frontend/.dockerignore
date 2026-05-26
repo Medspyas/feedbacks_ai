@@ -1,3 +1,7 @@
 node_modules/
 dist/
 .gitignore
+*.md
+.env
+.eslintrc.json
+.prettierrc
