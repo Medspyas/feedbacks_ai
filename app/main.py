@@ -1,21 +1,21 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-from app.database import connect_to_mongo, close_mongo_connection, create_indexes
 
 from app.api.v1.endpoints import router as feedback_router
-
+from app.database import close_mongo_connection, connect_to_mongo, create_indexes
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_to_mongo()
     await create_indexes()
-    
+
     yield
 
     await close_mongo_connection()
-    
+
 
 app = FastAPI(title="Feedback AI API", lifespan=lifespan)
 
@@ -34,6 +34,7 @@ app.add_middleware(
 
 app.include_router(feedback_router)
 
+
 @app.get("/")
 async def root():
-    return{"message": "API is running"}
+    return {"message": "API is running"}

@@ -1,0 +1,9 @@
+[flake8]
+max-line-length = 88
+exclude = 
+    venv,
+    __pycache__,
+    .git,
+    frontend,
+    tests
+ignore = E501, W503

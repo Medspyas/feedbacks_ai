@@ -1,11 +1,12 @@
-import os
-import json
 import asyncio
-from groq import AsyncClient
-from dotenv import load_dotenv
+import json
+import os
 
+from dotenv import load_dotenv
+from groq import AsyncClient
 
 load_dotenv()
+
 
 class AIServices:
     def __init__(self):
@@ -26,12 +27,10 @@ class AIServices:
             "language": "fr",
             "satisfaction_score": 5.0,
             "reply": "Merci pour votre retour, nous reviendrons vers vous rapidement.",
-            "suggested_action": "Traitement manuel requis"
+            "suggested_action": "Traitement manuel requis",
         }
-    
 
-
-    async def analysis_feedback(self, content: str, company:str, category:str):
+    async def analysis_feedback(self, content: str, company: str, category: str):
 
         prompt = f"""
         Tu es un expert en relation client pour l'entreprise "{company}".
@@ -74,29 +73,28 @@ class AIServices:
                     model=self.model_id,
                     messages=[{"role": "user", "content": prompt}],
                     response_format={"type": "json_object"},
-                    timeout=15
-                    )
-                        
-            
+                    timeout=15,
+                )
+
                 return json.loads(response.choices[0].message.content)
             except Exception as e:
                 print(f"Tentative {attempt + 1}/{self.max_retries} échouée : {e}")
 
-                if attempt < self.max_retries -1:
+                if attempt < self.max_retries - 1:
                     await asyncio.sleep(attempt + 1)
-            
-        print(f"Modèle principal indisponible, tentative sur {self.fallback_model_id} ...")
+
+        print(
+            f"Modèle principal indisponible, tentative sur {self.fallback_model_id} ..."
+        )
 
         try:
             response = await self.client.chat.completions.create(
-            model=self.fallback_model_id,
-            messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
-            timeout=40
+                model=self.fallback_model_id,
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"},
+                timeout=40,
             )
             return json.loads(response.choices[0].message.content)
         except Exception as e:
             print(f"Modèle fallback également indisponible : {e}")
             return self._fallback_response()
-        
-                

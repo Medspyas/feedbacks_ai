@@ -1,7 +1,7 @@
-from pydantic import BaseModel,  Field, ConfigDict
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import List, Optional
 
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Feedback(BaseModel):
@@ -13,7 +13,7 @@ class Feedback(BaseModel):
 
 
 class FeedbackDB(Feedback):
-    id : Optional[str] = Field(None, alias="_id")
+    id: Optional[str] = Field(None, alias="_id")
     status: str = "pending"
     ai_analysis: Optional[str] = None
     ai_response: Optional[str] = None
@@ -22,12 +22,7 @@ class FeedbackDB(Feedback):
     language: Optional[str] = None
     satisfaction_score: Optional[float] = None
     suggested_action: Optional[str] = None
-    
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
-        )
-    
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True
-    )
+
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
