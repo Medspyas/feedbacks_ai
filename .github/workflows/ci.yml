@@ -39,6 +39,16 @@ jobs:
         steps:
           - uses: actions/checkout@v4
 
+          - name: Setup Node
+            uses: actions/setup-node@v4
+            with:
+              node-version: '20'
+
+          - name: Install dependencies
+            run: |
+              cd frontend
+              npm run ci
+
           - name: Install dependencies
             run: |
               cd frontend
@@ -47,7 +57,7 @@ jobs:
     docker:
       runs-on: ubuntu-latest
       needs: [backend, frontend]
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/master'
       steps:
         - uses: actions/checkout@v4
 
