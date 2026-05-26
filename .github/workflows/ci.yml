@@ -1,84 +1,83 @@
 name: CI/CD pipeline
 
 on:
-    push:
-        branches: [master]
-    pull_request:
-        branches: [master]
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 jobs:
-    backend:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-            - name: Setup Python
-              uses: actions/setup-python@v5
-              with:
-                python-version: "3.11"
-            
-            - name: Install dependencies
-              run: |
-                pip install -r requirements.txt
-                pip install black flake8 pytest pytest-asyncio httpx
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install black flake8 pytest pytest-asyncio httpx
 
-            - name: Lint with black
-              run: black --check app/
+      - name: Lint with black
+        run: black --check app/
 
-            - name: Lint with flake8
-              run: flake8 app/
-            - name: Run tests
-              run: pytest tests/
-              env:
-                MONGO_DB_URL: ${{ secrets.MONGO_DB_URL }}
-                DB_NAME: ${{ secrets.DB_NAME }}
-                GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      - name: Lint with flake8
+        run: flake8 app/
 
-    frontend:
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v4
+      - name: Run tests
+        run: pytest tests/
+        env:
+          MONGO_DB_URL: ${{ secrets.MONGO_DB_URL }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
-          - name: Setup Node
-            uses: actions/setup-node@v4
-            with:
-              node-version: '20'
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-          - name: Install dependencies
-            run: |
-              cd frontend
-              npm ci
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-          - name: Lint
-            run: |
-              cd frontend
-              npm run lint
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
 
-    docker:
-      runs-on: ubuntu-latest
-      needs: [backend, frontend]
-      if: github.ref == 'refs/heads/master'
-      steps:
-        - uses: actions/checkout@v4
+      - name: Lint
+        run: |
+          cd frontend
+          npm run lint
 
-        - name: Login Docker Hub
-          uses: docker/login-action@v3
-          with:
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_PASSWORD }}
+  docker:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Build + Push Backend
-          uses: docker/build-push-action@v5
-          with:
-            context: .
-            push: true
-            tags: ${{ secrets.DOCKER_USERNAME }}/feedback-ai-backend:latest
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-        - name: Build + Push Frontend
-          uses: docker/build-push-action@v5
-          with:
-            context: ./frontend
-            push: true
-            tags: ${{ secrets.DOCKER_USERNAME }}/feedback-ai-frontend:latest
+      - name: Build + Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/feedback-ai-backend:latest
 
-    
+      - name: Build + Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/feedback-ai-frontend:latest
