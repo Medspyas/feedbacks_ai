@@ -45,16 +45,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      - name: Lint
-        run: |
-          cd frontend
-          npm run lint
-
+      - name: Install and lint
+        run: cd frontend && npm ci && npm run lint
   docker:
     runs-on: ubuntu-latest
     needs: [backend, frontend]
