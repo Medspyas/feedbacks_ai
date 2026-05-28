@@ -1,4 +1,4 @@
-FROM node:20-slim As builder
+FROM node:20-slim AS builder
 WORKDIR /app
 COPY package*.json .
 RUN npm config set strict-ssl false && \
