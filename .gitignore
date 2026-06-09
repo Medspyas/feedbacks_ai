@@ -7,3 +7,7 @@ __pycache__
 frontend/dist/
 *.log
 .DS_Store
+terraform.tfvars
+.terraform/
+*.tfstate
+*.tfstate.backup
