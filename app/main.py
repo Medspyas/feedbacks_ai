@@ -12,7 +12,6 @@ from app.database import close_mongo_connection, connect_to_mongo, create_indexe
 limiter = Limiter(key_func=get_remote_address)
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_to_mongo()

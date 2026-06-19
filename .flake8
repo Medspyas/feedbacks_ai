@@ -6,4 +6,5 @@ exclude =
     .git,
     frontend,
     tests
+    .venv
 ignore = E501, W503

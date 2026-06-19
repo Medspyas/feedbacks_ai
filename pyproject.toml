@@ -1,9 +1,11 @@
 [tool.black]
 line-length = 88
+include = '\.pyi?$'
 exclude = '''
 /(
     venv
     | frontend
     | __pycache__
+    | \.venv
 )/
 '''
