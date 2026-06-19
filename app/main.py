@@ -3,8 +3,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
 from app.api.v1.endpoints import router as feedback_router
 from app.database import close_mongo_connection, connect_to_mongo, create_indexes
+
+limiter = Limiter(key_func=get_remote_address)
+
 
 
 @asynccontextmanager
@@ -18,7 +24,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Feedback AI API", lifespan=lifespan)
-
+app.state.limiter = limiter
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
