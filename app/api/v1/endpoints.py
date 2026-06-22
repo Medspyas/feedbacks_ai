@@ -19,8 +19,8 @@ def get_feedback_services():
 @limiter.limit("3/minute;15/hour")
 async def create_new_feedback(
     request: Request,
-    feedback: Feedback, 
-    service: FeedbackServices = Depends(get_feedback_services)
+    feedback: Feedback,
+    service: FeedbackServices = Depends(get_feedback_services),
 ):
     try:
         return await service.create_feedback(feedback)
