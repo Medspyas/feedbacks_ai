@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 
 
 from app.models.feedback import Feedback, FeedbackDB
@@ -18,7 +18,9 @@ def get_feedback_services():
 @router.post("/", response_model=FeedbackDB, status_code=status.HTTP_201_CREATED)
 @limiter.limit("3/minute;15/hour")
 async def create_new_feedback(
-    feedback: Feedback, service: FeedbackServices = Depends(get_feedback_services)
+    request: Request,
+    feedback: Feedback, 
+    service: FeedbackServices = Depends(get_feedback_services)
 ):
     try:
         return await service.create_feedback(feedback)
