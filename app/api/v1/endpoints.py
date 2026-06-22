@@ -1,10 +1,11 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.main import limiter
+
 
 from app.models.feedback import Feedback, FeedbackDB
 from app.services.feedback_services import FeedbackServices
+from app.limiter import limiter
 
 router = APIRouter(prefix="/feedbacks", tags=["Feedbacks"])
 
