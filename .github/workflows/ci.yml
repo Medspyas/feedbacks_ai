@@ -108,6 +108,20 @@ jobs:
             echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
             echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> .env
 
+            # Crée les dossiers certbot
+            mkdir -p certbot/conf certbot/www
+
+            # Obtient le certificat SSL si pas encore fait (première fois uniquement)
+            if [ ! -d "certbot/conf/live/feedback-ai.duckdns.org" ]; then
+              docker run --rm -p 80:80 \
+                -v $(pwd)/certbot/conf:/etc/letsencrypt \
+                -v $(pwd)/certbot/www:/var/www/certbot \
+                certbot/certbot certonly --standalone \
+                --email ${{ secrets.CERTBOT_EMAIL }} \
+                --agree-tos --no-eff-email \
+                -d feedback-ai.duckdns.org
+            fi
+
             # Télécharge les dernières images et redémarre les containers
             docker-compose -f docker-compose.prod.yml pull
             docker-compose -f docker-compose.prod.yml up -d
