@@ -8,7 +8,12 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.api.v1.endpoints import router as feedback_router
-from app.database import close_mongo_connection, connect_to_mongo, create_indexes, db_connection
+from app.database import (
+    close_mongo_connection,
+    connect_to_mongo,
+    create_indexes,
+    db_connection,
+)
 
 
 @asynccontextmanager
