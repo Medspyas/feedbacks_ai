@@ -38,19 +38,23 @@ async def close_mongo_connection():
 
 
 async def create_indexes():
-    collection = db_connection.db.get_collection("feedbacks")
+    try:
+        collection = db_connection.db.get_collection("feedbacks")
 
-    await collection.create_index([("created_at", -1)])
+        await collection.create_index([("created_at", -1)])
 
-    await collection.create_index(
-        [
-            ("content", "text"),
-            ("keywords", "text"),
-            ("company_name", "text"),
-            ("username", "text"),
-        ],
-        default_language="french",
-        weights={"content": 10, "keywords": 8, "company_name": 3, "username": 2},
-    )
+        await collection.create_index(
+            [
+                ("content", "text"),
+                ("keywords", "text"),
+                ("company_name", "text"),
+                ("username", "text"),
+            ],
+            default_language="french",
+            weights={"content": 10, "keywords": 8, "company_name": 3, "username": 2},
+        )
 
-    logger.info("Index créés : created_at + texte")
+        logger.info("Index créés : created_at + texte")
+    except Exception as e:
+        # L'app démarre quand même si MongoDB est injoignable au démarrage
+        logger.warning(f"Impossible de créer les index : {e}")
