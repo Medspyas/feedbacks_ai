@@ -1,12 +1,12 @@
-import logging
 import os
 
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
+from app.logger import get_logger
+
 load_dotenv()
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("uvicorn")
+logger = get_logger("database")
 
 
 class Database:

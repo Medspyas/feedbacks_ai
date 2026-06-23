@@ -73,3 +73,41 @@ jobs:
           context: ./frontend
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/feedback-ai-frontend:latest
+
+  # Job de déploiement — s'exécute après que les images sont poussées sur Docker Hub
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [docker]
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+
+      # Copie docker-compose.prod.yml et nginx.conf sur le serveur OCI
+      - name: Copier les fichiers de config sur le serveur
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.OCI_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          source: "docker-compose.prod.yml,nginx/nginx.conf"
+          target: "/app"
+
+      # Se connecte en SSH et lance les containers avec les dernières images
+      - name: Déployer sur le serveur OCI
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          script: |
+            cd /app
+
+            # Crée le fichier .env avec les secrets GitHub
+            echo "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" > .env
+            echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+            echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
+            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> .env
+
+            # Télécharge les dernières images et redémarre les containers
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d

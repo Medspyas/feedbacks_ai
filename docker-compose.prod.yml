@@ -1,0 +1,35 @@
+services:
+
+  # Backend FastAPI — utilise l'image poussée sur Docker Hub par le CI
+  backend:
+    image: ${DOCKER_USERNAME}/feedback-ai-backend:latest
+    restart: always
+    env_file:
+      - .env
+    # Vérifie que le backend répond avant de démarrer les autres services
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend React — utilise l'image poussée sur Docker Hub par le CI
+  frontend:
+    image: ${DOCKER_USERNAME}/feedback-ai-frontend:latest
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # Nginx — seul point d'entrée exposé sur internet (port 80)
+  # Redirige vers backend ou frontend selon la route
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
