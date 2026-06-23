@@ -109,5 +109,5 @@ jobs:
             echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> .env
 
             # Télécharge les dernières images et redémarre les containers
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml up -d
