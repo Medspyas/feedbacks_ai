@@ -90,7 +90,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
           source: "docker-compose.prod.yml,nginx/nginx.conf"
-          target: "/app"
+          target: "/home/ubuntu/app"
 
       # Se connecte en SSH et lance les containers avec les dernières images
       - name: Déployer sur le serveur OCI
@@ -100,7 +100,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
           script: |
-            cd /app
+            cd /home/ubuntu/app
 
             # Crée le fichier .env avec les secrets GitHub
             echo "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" > .env
