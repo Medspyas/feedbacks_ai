@@ -13,3 +13,4 @@ terraform.tfvars
 *.tfstate.backup
 retry.ps1
 .venv/
+monitoring/
