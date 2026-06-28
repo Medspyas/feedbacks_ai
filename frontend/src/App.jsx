@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react';
-import {Sparkles, Star, Loader2, Check, Trash2} from 'lucide-react';
+import {MessageSquare, Star, Loader2, Check, Trash2, Send, X} from 'lucide-react';
 
 
 const App = () => {
@@ -53,7 +53,7 @@ const App = () => {
     }
   };
 
-  const festchCount = async () => {
+  const fetchCount = async () => {
     const res = await fetch('/api/feedbacks/count');
     const data = await res.json();
     setTotalCount(data.total);
@@ -88,7 +88,7 @@ const App = () => {
 
       if (response.ok) {
         await fetchFeedback();
-        await festchCount();
+        await fetchCount();
         setStatus('success');
         setTimeout(() => { 
           setStatus('idle'); 
@@ -107,11 +107,11 @@ const App = () => {
   const handleDelete = async (id) => {
     try {
       await fetch('/api/feedbacks/' + id, { method: 'DELETE' });
-      setFeedbacks(feedbacks.filter(f => f._id !== id));
-      setTotalCount(prev => prev - 1);      
+      await fetchFeedback(currentPage);
+      await fetchCount();
     } catch (err) {
       console.error("Erreur suppression", err);
-    }      
+    }
   };
 
   const getSentimentBadge = (status) => {
@@ -166,8 +166,8 @@ const App = () => {
       {/* Header */}
       <nav className="w-full max-w-2xl flex justify-between items-center mb-16">
         <div className="flex items-center gap-2 text-zinc-100 font-semibold tracking-wide">
-          <Sparkles size={18} className="text-indigo-400"/>
-          <span>Feedback.ai</span>
+          <MessageSquare size={18} className="text-indigo-400 translate-y-[2px]"/>
+          <span>Feedback</span>
         </div>
         <div className="flex gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
           <button 
@@ -191,8 +191,8 @@ const App = () => {
         {view === 'form' ? (
           <div className="space-y-8">
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-semibold text-zinc-100 tracking-tight"> Analyser un retour client</h1>
-              <p className="text-zinc-500 text-sm"> L'IA extrait instantanément le sentiment et les actions à mener.</p>
+              <h1 className="text-3xl font-semibold text-zinc-100 tracking-tight">Partagez votre expérience</h1>
+              <p className="text-zinc-500 text-sm">Votre avis nous aide à faire mieux, un retour à la fois.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="bg-zinc-900/50 p-6 md:p-8 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-6">
@@ -235,7 +235,7 @@ const App = () => {
               
 
               <textarea
-                required rows="4" placeholder="Ecrivez votre message... "
+                required rows="4" placeholder="Écrivez votre message..."
                 minLength={10} 
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
@@ -260,7 +260,7 @@ const App = () => {
                   type="submit" disabled={status !== 'idle'}
                   className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all disabled:opacity-70"
                 >
-                  {status === 'idle' && <><Sparkles size={16}/> Analyser avec L'IA</>}
+                  {status === 'idle' && <><Send size={16}/> Envoyer mon avis</>}
                   {status === 'loading' && <><Loader2 size={16} className="animate-spin"/> Traitement ...</>}
                   {status === 'success' && <><Check size={16}/> Terminé</>}  
                   </button>
@@ -269,7 +269,7 @@ const App = () => {
           </div>
         ): (
           <div className="space-y-6">
-            <h2 className="text-xl font-medium text-zinc-100">Analyse récentes</h2>
+            <h2 className="text-xl font-medium text-zinc-100">Analyses récentes</h2>
 
             <div className='relative'>
               <input 
@@ -277,7 +277,7 @@ const App = () => {
               placeholder='Rechercher par nom, entreprise, contenu...'
               value={searchTerm}
               onChange={handleSearch}
-              className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:b order-indigo-500/50 outline-none text-zinc-100 placeholder:text-zinc-600"
+              className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500/50 outline-none text-zinc-100 placeholder:text-zinc-600"
               />
               {searchTerm && (
                 <button
@@ -287,7 +287,7 @@ const App = () => {
                 }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
                 >
-                  x 
+                  <X size={14}/>
                 </button>
               )}
             </div>
@@ -364,7 +364,7 @@ const App = () => {
                         <Star size={12} fill="currentColor"/> {fb.rating}/5
                       </div>
 
-                      {fb.language && (
+                      {fb.satisfaction_score && (
                         <span className='text-xs text-zinc-500'>Score {fb.satisfaction_score}/10</span>
                       )}
                     </div>
@@ -408,7 +408,7 @@ const App = () => {
 
                         {fb.suggested_action && (
                           <p className='text-sm text-amber-400/80 border-t border-indigo-500/10 pt-2'>
-                            <span className='font-medium'>Action recommandé: </span>
+                            <span className='font-medium'>Action recommandée : </span>
                             {fb.suggested_action}
                           </p>
                         )}
