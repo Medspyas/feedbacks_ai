@@ -15,6 +15,8 @@ def get_feedback_services():
     return FeedbackServices()
 
 
+# On crée le feedback et on l'envoie direct à l'IA pour analyse
+# Limité à quelques requêtes par minute/heure pour éviter le spam
 @router.post("/", response_model=FeedbackDB, status_code=status.HTTP_201_CREATED)
 @limiter.limit("3/minute;15/hour")
 async def create_new_feedback(
@@ -28,6 +30,7 @@ async def create_new_feedback(
         raise HTTPException(status_code=422, detail=str(e))
 
 
+# Renvoie la liste des feedbacks, ou les résultats de recherche si on passe ?search=...
 @router.get("/", response_model=List[FeedbackDB])
 async def read_all_feedbacks(
     limit: int = 10,
@@ -40,6 +43,7 @@ async def read_all_feedbacks(
     return await service.get_all_feedbacks(limit=limit, skip=skip)
 
 
+# Juste le total de feedbacks, pour afficher le chiffre dans le dashboard
 @router.get("/count")
 async def get_feedback_count(
     services: FeedbackServices = Depends(get_feedback_services),
@@ -48,6 +52,7 @@ async def get_feedback_count(
     return {"total": count}
 
 
+# Va chercher un feedback précis à partir de son id
 @router.get("/{feedback_id}", response_model=FeedbackDB)
 async def get_one_feed_back(
     feedback_id: str, service: FeedbackServices = Depends(get_feedback_services)
@@ -58,6 +63,7 @@ async def get_one_feed_back(
     return feedback
 
 
+# Modifie un feedback existant, sans relancer l'IA dessus
 @router.put("/{feedback_id}", response_model=FeedbackDB)
 async def update_feedback_content(
     feedback_id: str,
@@ -76,6 +82,7 @@ async def update_feedback_content(
     return updated_feedback
 
 
+# Supprime un feedback
 @router.delete("/{feedback_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_feeedback(
     feedback_id: str, service: FeedbackServices = Depends(get_feedback_services)

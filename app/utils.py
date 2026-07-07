@@ -4,6 +4,7 @@ import re
 MAX_CONTENT_LENGTH = 2000
 
 
+# Nettoie le texte : on enlève le HTML, on échappe les caractères spéciaux et on coupe si c'est trop long
 def clean_text(text: str) -> str:
 
     if not text:
@@ -21,6 +22,7 @@ def clean_text(text: str) -> str:
     return text.strip()
 
 
+# On rejette les textes vides ou le spam trop évident (genre "aaaaaaaaaaaaaaa")
 def is_valid_content(text: str) -> bool:
 
     if not text:

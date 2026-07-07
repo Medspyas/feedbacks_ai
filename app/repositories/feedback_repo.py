@@ -18,6 +18,7 @@ class FeedbackRepository:
         result = await self.collection.insert_one(data)
         return str(result.inserted_id)
 
+    # On affiche d'abord les feedbacks les plus récents
     async def get_all(self, limit: int = 10, skip: int = 0) -> List[Dict[str, Any]]:
 
         cursor = self.collection.find().sort("created_at", -1).skip(skip).limit(limit)
@@ -26,6 +27,7 @@ class FeedbackRepository:
             f["_id"] = str(f["_id"])
         return feedbacks
 
+    # Si l'id est mal formé, on renvoie None plutôt que de faire planter l'appli
     async def get_by_id(self, feedback_id: str) -> Optional[Dict[str, Any]]:
         try:
             document = await self.collection.find_one({"_id": ObjectId(feedback_id)})
@@ -46,6 +48,7 @@ class FeedbackRepository:
         result = await self.collection.delete_one({"_id": ObjectId(feedback_id)})
         return result.deleted_count > 0
 
+    # Cherche le mot-clé un peu partout (nom, entreprise, contenu...), sans tenir compte de la casse
     async def search(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         regex = {"$regex": query, "$options": "i"}
 

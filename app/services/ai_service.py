@@ -19,6 +19,7 @@ class AIServices:
 
         self.max_retries = 3
 
+    # Si l'IA (et son plan B) ne répond toujours pas, on renvoie ça pour ne pas planter
     def _fallback_response(self):
         return {
             "sentiment": "Analyse indisponible",
@@ -30,6 +31,8 @@ class AIServices:
             "suggested_action": "Traitement manuel requis",
         }
 
+    # On envoie le feedback à l'IA et on réessaie si ça échoue ; si vraiment rien ne marche,
+    # on bascule sur le modèle de secours, puis sur une réponse par défaut
     async def analysis_feedback(self, content: str, company: str, category: str):
 
         prompt = f"""

@@ -9,6 +9,7 @@ class FeedbackServices:
         self.repo = FeedbackRepository()
         self.ai = AIServices()
 
+    # On nettoie le texte, on l'envoie à l'IA, puis on sauvegarde le résultat
     async def create_feedback(self, feedback_in: Feedback) -> FeedbackDB:
 
         cleaned = clean_text(feedback_in.content)
@@ -41,6 +42,7 @@ class FeedbackServices:
 
         return await self.repo.get_by_id(feedback_id)
 
+    # Renvoie les feedbacks page par page, du plus récent au plus ancien
     async def get_all_feedbacks(self, limit: int = 10, skip: int = 0):
 
         return await self.repo.get_all(limit=limit, skip=skip)
@@ -49,6 +51,7 @@ class FeedbackServices:
 
         return await self.repo.get_by_id(feedback_id)
 
+    # Modifie un feedback, ou renvoie None si l'id ne correspond à rien
     async def update_feedback(self, feedback_id: str, update_data: Feedback):
 
         data = update_data.model_dump()
@@ -64,5 +67,6 @@ class FeedbackServices:
     async def count_feedbacks(self) -> int:
         return await self.repo.count()
 
+    # Recherche libre parmi les feedbacks (contenu, entreprise, mots-clés...)
     async def search_feedbacks(self, query: str, limit: int = 10) -> list:
         return await self.repo.search(query, limit)

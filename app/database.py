@@ -17,6 +17,7 @@ class Database:
 db_connection = Database()
 
 
+# On se connecte à MongoDB quand l'appli démarre
 async def connect_to_mongo():
     uri = os.getenv("MONGO_DB_URL")
 
@@ -31,6 +32,7 @@ async def connect_to_mongo():
         logger.info(f"Erreur de connection: {e}")
 
 
+# On coupe proprement la connexion quand l'appli s'arrête
 async def close_mongo_connection():
     if db_connection.client:
         db_connection.client.close()
